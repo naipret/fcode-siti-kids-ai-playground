@@ -19,6 +19,9 @@ pip install --quiet -r app/requirements.txt
 
 New-Item -ItemType Directory -Force -Path "app/assets/audio/koon", "app/assets/audio/timnang", "app/assets/video" | Out-Null
 
+Write-Host "🧹 Cleaning up existing processes on ports 8000 & 8001..." -ForegroundColor Yellow
+Get-NetTCPConnection -LocalPort 8000,8001 -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess -Unique | ForEach-Object { Stop-Process -Id $_ -Force -ErrorAction SilentlyContinue }
+
 Write-Host "🎮 Launching Game 1: Cùng Koon Đi Tìm Cầu Vồng (Port 8000)..." -ForegroundColor Green
 $koonProc = Start-Process python -ArgumentList "app/server.py" -PassThru -NoNewWindow
 

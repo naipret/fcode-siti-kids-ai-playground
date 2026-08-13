@@ -21,6 +21,17 @@ pip install --quiet -r app/requirements.txt
 # Create assets directories if missing
 mkdir -p app/assets/audio/koon app/assets/audio/timnang app/assets/video
 
+# Free ports 8000 and 8001 if currently in use by old processes
+echo "🧹 Cleaning up existing processes on ports 8000 & 8001..."
+if command -v fuser >/dev/null 2>&1; then
+    fuser -k 8000/tcp 2>/dev/null || true
+    fuser -k 8001/tcp 2>/dev/null || true
+elif command -v lsof >/dev/null 2>&1; then
+    lsof -ti:8000 | xargs kill -9 2>/dev/null || true
+    lsof -ti:8001 | xargs kill -9 2>/dev/null || true
+fi
+sleep 1
+
 echo "🎮 Launching Game 1: Cùng Koon Đi Tìm Cầu Vồng (Port :8000)..."
 python app/server.py &
 PID_KOON=$!
