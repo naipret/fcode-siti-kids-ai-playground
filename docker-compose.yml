@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  koon-game:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: siti_koon_game
+    command: python app/server.py
+    ports:
+      - "8000:8000"
+    environment:
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
+      - OR_MODEL=${OR_MODEL:-openai/gpt-4o-mini}
+      - KOON_VOICE=${KOON_VOICE:-mai_linh}
+    volumes:
+      - ./app/assets:/app/app/assets
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+
+  timnang-game:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: siti_timnang_game
+    command: python app/timnang_master.py
+    ports:
+      - "8001:8001"
+    environment:
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
+      - OR_MODEL=${OR_MODEL:-openai/gpt-4o-mini}
+      - KOON_VOICE=${KOON_VOICE:-mai_linh}
+      - TEAMS_COUNT=${TEAMS_COUNT:-3}
+    volumes:
+      - ./app/assets:/app/app/assets
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
