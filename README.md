@@ -12,7 +12,7 @@ Dự án xây dựng phần mềm AI cho phần giao lưu/giải trí trên sân
 
 Trẻ đồng hành cùng nhân vật AI **KOON** vượt qua **7 thử thách** để tìm lại 7 sắc màu cầu vồng.
 
-- **Cách chơi**: KOON đọc câu đố → trẻ trả lời (mic hoặc gõ chữ) → LLM chấm đúng/sai **theo logic câu đố** (chấp nhận nhiều đáp án hợp lý, vd "4 chân không đi" → bàn/ghế/tủ đều đúng) → đúng: mở khóa mảnh màu; sai: KOON **đáp lại hội thoại** + gợi ý, trẻ thử lại (KHÔNG lặp lại câu hỏi → mượt).
+- **Cách chơi**: KOON đọc câu đố → trẻ trả lời (mic hoặc gõ chữ) → ô nhập/mic **khoá lại** trong lúc LLM chấm (hiện đáp án bé vừa nói + "KOON đang nghĩ…") → đúng: **confetti + chime ăn mừng ngay** rồi mở khóa mảnh màu; sai: **chime báo sai trước** rồi KOON **đáp lại hội thoại** + gợi ý, trẻ thử lại (KHÔNG lặp lại câu hỏi → mượt). LLM chấm **theo logic câu đố** (chấp nhận nhiều đáp án hợp lý, vd "4 chân không đi" → bàn/ghế/tủ đều đúng).
 - **Công nghệ**:
   - **TTS**: Kokoro Vietnamese (ONNX CPU, giọng `mai_linh`) — **pre-cache** toàn bộ câu cố định (phát tức thì <200ms) + Kokoro động cho câu phản hồi (chịu lỗi: thiếu file → tự sinh).
   - **LLM**: OpenRouter GPT-4o-mini — 1 call chấm đúng/sai **+ sinh phản hồi hội thoại** (lễ phép, gợi ý nhẹ, không tiết lộ đáp án, không bịa lý do sai sự thật, an toàn trẻ em).
@@ -478,7 +478,9 @@ KOON_GEN_ENGINE=edge python app/scripts/gen_timnang_voice.py  # edge-tts → .mp
 {"type": "state", "phase": "ask", "idx": 0, "unlocked": [], "total": 7}
 {"type": "show_question", "text": "...", "color": "Đỏ", "hex": "#e74c3c"}
 {"type": "await_answer"}
-{"type": "unlock_color", "hex": "#e74c3c"}
+{"type": "correct_answer", "hex": "#e74c3c"}   // ĐÚNG: confetti + chime đúng + magic particle NGAY khi chấm xong (trước khi KOON nói)
+{"type": "wrong_answer"}                        // SAI: chime báo sai (to) + "❌ Chưa đúng…"; server đợi ~0.6s rồi mới để KOON nói (không đè tiếng)
+{"type": "unlock_color", "hex": "#e74c3c"}      // sáng vòm cầu vồng + chấm tiến trình (sau khi KOON đã xác nhận xong)
 {"type": "rainbow"}
 {"type": "magic_reveal"}                       // KOON bay giữa + particle + sound (hô biến)
 {"type": "play_video", "url": "/video/recap.mp4"}   // có file mp4 → phát video

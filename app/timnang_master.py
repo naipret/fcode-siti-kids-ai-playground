@@ -195,6 +195,9 @@ class Game:
         tts = get_tts()
         if not tts:
             log.info("[TTS skip] %s", text[:60])
+            if wait:
+                delay = max(1.5, min(8.0, len(text) * 0.07))
+                await asyncio.sleep(delay)
             return False
         try:
             audio, _ = await asyncio.wait_for(asyncio.to_thread(tts.synthesize, text), timeout=15)

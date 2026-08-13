@@ -234,7 +234,9 @@ class Session:
         """Phát text qua Kokoro TTS (sinh động, WAV), chờ kết thúc."""
         tts = get_tts()
         if not tts:
-            log.warning("TTS không có — bỏ qua: '%s'", text[:50])
+            delay = max(1.5, min(8.0, len(text) * 0.07))
+            log.warning("TTS không có — giả lập thời gian đọc %.1fs: '%s'", delay, text[:50])
+            await asyncio.sleep(delay)
             return
 
         # Sinh audio trong thread riêng để không block event loop
@@ -383,6 +385,9 @@ async def run_flow(s: Session):
                 await s.state()
 
                 if correct:
+                    # Phản hồi ĐÚNG ngay (confetti + chime ở frontend) TRƯỚC khi KOON nói
+                    await s.send({"type": "correct_answer", "hex": ch["hex"]})
+                    await asyncio.sleep(0.6)  # chờ chime đúng phát xong rồi KOON mới nói
                     if reply:
                         # Đáp án thay thế hợp lý → LLM reply động xác nhận (đúng sự thật)
                         await s.say(reply)
@@ -397,7 +402,9 @@ async def run_flow(s: Session):
                     break
                 else:
                     # Phản hồi hội thoại động (LLM/Kokoro) — KHÔNG đọc lại câu hỏi
+                    # Tiếng báo sai phát trước, đợi ~0.6s rồi KOON mới nói (không đè tiếng)
                     await s.send({"type": "wrong_answer"})
+                    await asyncio.sleep(0.6)
                     await s.say(reply)
 
         # ---- RAINBOW ----
